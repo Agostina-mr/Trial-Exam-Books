@@ -1,0 +1,30 @@
+@page "/CreateAuthor"
+@using AuthorBlazor.Model
+@using AuthorBlazor.Data
+@inject AuthorServices authorServices
+<h3>CreateAuthor</h3>
+
+<EditForm Model="newAuthor" OnValidSubmit="NewAuthor">
+   <div class="form-group">
+        First Name:<br/>
+        <InputText @bind-Value="newAuthor.FirstName"/>
+    </div>
+    <div class="form-group">
+        Last Name:<br/>
+        <InputText @bind-Value="newAuthor.LastName"/>
+    </div>
+    <p class="actions">
+        <button class="btn btn-outline-dark" type="submit"> Create</button>
+    </p>
+</EditForm>
+<p>Author Id : @newAuthor.Id</p>
+
+
+@code {
+    private Author newAuthor = new Author();
+
+    private async Task NewAuthor()
+    {
+        newAuthor = await authorServices.PostAuthor(newAuthor);
+    }
+}

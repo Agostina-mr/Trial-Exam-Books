@@ -1,0 +1,50 @@
+@page "/CreateBooks"
+@using Microsoft.AspNetCore.Components
+@using AuthorBlazor.Model
+@using AuthorBlazor.Data
+@inject AuthorServices _authorServices
+<h3>CreateBooks</h3>
+
+
+
+<EditForm Model="newBook" OnValidSubmit="CreateBook">
+    
+    <div class="form-group">
+        Title:<br/>
+        <InputText @bind-Value="newBook.Title"/>
+    </div>
+    <div class="form-group">
+        Genre:<br/>
+        <InputText @bind-Value="newBook.Genre"/>
+    </div>
+    <select class="form-control selectpicker" @bind="authorId">
+        <option>--Authers--</option>
+        @foreach(var item in _authors)
+        {
+            <option value="@item.Id">@item.FirstName @item.LastName</option>
+        }
+    </select>
+    <p class="actions">
+        <button class="btn btn-outline-dark" type="submit"> Create</button>
+    </p>
+    
+
+
+
+</EditForm>
+@code {
+    private Book newBook = new Book();
+    private int authorId;
+    private List<Author> _authors = new List<Author>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _authors = await _authorServices.GetAllAuthors();
+    }
+
+    public async Task CreateBook()
+    {
+        newBook = await _authorServices.PostBook(authorId, newBook);
+    }
+
+}

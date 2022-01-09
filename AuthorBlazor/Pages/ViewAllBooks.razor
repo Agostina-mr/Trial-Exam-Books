@@ -1,0 +1,97 @@
+@page "/ViewAllBooks"
+@using AuthorBlazor.Model
+@using AuthorBlazor.Data
+@using System.Diagnostics
+@inject AuthorServices _authorServices
+<h3>ViewAllBooks</h3>
+@if (_authors == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else if (!_authors.Any())
+{
+    <p>
+        <em>No Author  exist. Please add some.</em>
+    </p>
+}
+else
+{
+    <p>
+        Filter by Author Last Name: <input type="text" @oninput="@(FilterByAuthor)" style="width:50px"/>
+    </p>
+    <p>
+        Filter by Title: <input type="text" @oninput="@(FilterByTitle)" style="width:50px"/>
+    </p>
+    
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Year</th>
+            <th>Genre</th>
+            <th>Pages</th>
+            <th>ISBN</th>
+            <th>Delete</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var author in _authorsToDisplay)
+        {
+            @foreach(var book in author.Books)
+            {
+                <tr>
+                    <td>@book.Title</td>
+                    <td>@author.FirstName <br/> @author.LastName</td>
+                    <td>@book.PublicationYear</td>
+                    <td>@book.Genre</td>
+                    <td>@book.NumOfPages</td>
+                    <td>@book.ISBN</td>
+                    <td>
+                         <button @onclick="@(() => RemoveBook(book.ISBN))">
+                         <i class="oi oi-trash" style="color:red"/>
+                         </button>
+                    </td>
+                </tr> 
+            }
+           
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Author> _authors = new List<Author>();
+    private List<Author> _authorsToDisplay = new List<Author>();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        _authors = await _authorServices.GetAllAuthors();
+        _authorsToDisplay = _authors;
+
+    }
+
+    private async Task RemoveBook(int bookIsbn)
+    {
+        await _authorServices.RemoveBook(bookIsbn);
+        _authors = await _authorServices.GetAllAuthors();
+
+    }
+
+    private void FilterByAuthor(ChangeEventArgs lastName)
+    {
+        _authorsToDisplay = _authors.Where(a => a.LastName == (string) lastName.Value).ToList();
+    }
+    
+    private void FilterByTitle(ChangeEventArgs title)
+    {
+        _authorsToDisplay = _authors.FindAll(a => a.Books.Exists(b =>
+        {
+            Debug.Assert(title.Value != null, "title.Value != null");
+            return b.Title.Equals(title.Value.ToString());
+        }));
+    }
+
+}
